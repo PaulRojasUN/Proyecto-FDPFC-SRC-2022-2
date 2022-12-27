@@ -47,12 +47,22 @@ val b1_10= b1 ( 10 )
 val b1_20 = b1 ( 20 )
 val b2_10= b2 ( 10 )
 val b2_20 = b2 ( 20 )
-val b3_10= b3 ( 10 )
+val b3_10 = b3( 10 )
 val b3_20 = b3( 20 )
+
+rho ( d1 , b1_10 )
+rho ( d1 , b2_10 )
+rho ( d2 , b1_10 )
+rho ( d2 , b2_10 )
+rho ( d1 , b3_10 ) //No coincide con el del pdf
+rho ( d2 , b3_10 ) //No coincide con el del pdf
+
 
 /*  eg 2.2.1
   val py1 = Vector(0.25,0.95)
   val pp2 = Vector(0.6, 0.4)
   rhoER((pp2, py1)) ==  1 .1297078329082348 == rho (d2,b2_10 )
 
+
+rhoER((Vector(0.1, 0.2, 0.2, 0.2, 0.3), Vector(0.1, 0.3, 0.5, 0.7, 0.9)))
 */
