@@ -12,10 +12,13 @@ package object proyecto {
   def rhoER(d: (Frequency, DistributionValues)): Double = {
     val K = 10
     val alpha = 1.6
-    val a = (for (i <- (0 to d._1.length - 1)) yield for (j <- (0 to d._1.length - 1))
-      yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))).flatten
-
-    a.reduceLeft(_ + _) * K
+    val a = {
+      for {
+        i <- 0 to d._1.length - 1
+        j <- 0 to d._1.length - 1
+      } yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+    }
+    a.sum * K
   }
 
   type SpecificBeliefConf = Vector[Double]
