@@ -45,7 +45,7 @@ package object proyecto {
   }
 
 
-  //Función que construye un vector que enteros las cuales representa las apariciones de los valores de sb en los intervalos de inter.
+  //Función que construye un vector de enteros, el cual representa las apariciones de los valores de sb en los intervalos de inter.
   def counterIntervals(sb: SpecificBeliefConf, inter: Vector[(Double, Double)], counts: Vector[Int]): Vector[Int] = {
     val indexToUpdate = indexInterval(sb.head, inter, 0)
     if (sb.tail != Vector())
@@ -55,7 +55,6 @@ package object proyecto {
   }
 
   def rho(d_k: Discretization, sb: SpecificBeliefConf): Double = {
-    //val limits =
 
     val intervals = createIntervals(0.0 +: d_k :+ 1.0) // [0,a), [a, b),..., [y,z),[z,1]
 
