@@ -3,6 +3,10 @@ package object proyecto {
   import math.pow
   import math.abs
 
+  //---------------------------------- Ejercicio 2.1 Medida de Esteban & Ray ------------------------------------//
+
+  //Ejercicio 2.1.1
+
   //Puede tomar cualquier valor real
   type DistributionValues = Vector[Double]
 
@@ -21,12 +25,12 @@ package object proyecto {
     a.sum * K
   }
 
+  //------------------------------ Ejercicio 2.2 Elementos Estaticos del Modelo ----------------------------------//
+
+  //Ejercicio 2.2.1
   type SpecificBeliefConf = Vector[Double]
-
   type GenericBeliefConf = Int => SpecificBeliefConf
-
   type Discretization = Vector[Double]
-
 
   //Función que a partir de una lista de dobles, crea un vector de intervalos.
   def createIntervals(d_k: Discretization): Vector[(Double, Double)] = {
@@ -72,26 +76,13 @@ package object proyecto {
     rhoER((pi, y))
 
   }
+
+  //------------------------------ Ejercicio 2.3 Elementos Dinamicos del Modelo ----------------------------------//
+
+  //Ejercicio 2.3.1
   type WeightedGraph = (Int, Int) => Double
   type SpecificWeightedGraph = (WeightedGraph , Int )
   type GenericWeightedGraph = Int => SpecificWeightedGraph
-
-  def i1 (nags: Int): SpecificWeightedGraph ={
-    ((i : Int, j:Int) => if (i==j ) 1.0
-    else if(i<j) 1.0/(j-i).toDouble
-    else 0.0, nags)
-  }
-  def i2(nags: Int): SpecificWeightedGraph = {
-    ((i: Int, j:Int) => if (i==j) 1.0
-    else if (i<j) (j-i).toDouble/nags.toDouble
-    else (nags-(i-j)).toDouble/nags.toDouble,nags)
-  }
-
-  val i1_10=i1(10)
-  val i2_10=i2(10)
-  val i1_20=i1(20)
-  val i2_20=i2(20)
-
 
   def showWeightGraph(swg : SpecificWeightedGraph):IndexedSeq[IndexedSeq[Double]]=  {
     val (a, b) = swg
@@ -103,6 +94,7 @@ package object proyecto {
 
   }
 
+  //Ejercicio 2.3.2
   def confBiasUpdate(b:SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf ={
     val CB = for(i <- 0 to b.length-1) yield {
       val A_i = for(j <- 0 to b.length-1 if swg._1(j,i) > 0) yield j
@@ -111,6 +103,18 @@ package object proyecto {
     }
     CB.toVector
   }
+
+  //Ejercicio 2.3.3
+  type FunctionUpdate = (SpecificBeliefConf,SpecificWeightedGraph) => SpecificBeliefConf
+  def simulate(fu: FunctionUpdate, swg: SpecificWeightedGraph, b0: SpecificBeliefConf, t: Int): IndexedSeq[SpecificBeliefConf] = {
+    if(t == 1) IndexedSeq(fu(b0,swg))
+    else {
+      val newB = fu(b0,swg)
+      newB +: simulate(fu,swg,newB,t-1)
+    }
+  }
+
+  //------------------------ Ejercicio 2.4 Acelerando la simulacion con Paralelizacion -----------------------------//
 
 
 }
