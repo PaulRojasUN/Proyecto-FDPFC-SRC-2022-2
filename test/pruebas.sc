@@ -69,3 +69,11 @@ rhoER((Vector(0.1, 0.2, 0.2, 0.2, 0.3), Vector(0.1, 0.3, 0.5, 0.7, 0.9)))
 
 showWeightGraph(i1_10)
 showWeightGraph(i2_10)
+
+
+confBiasUpdate(b1_10,i1_10)
+confBiasUpdate(b1_10,i2_10)
+confBiasUpdate(b2_10,i1_10)
+confBiasUpdate(b2_10,i2_10)
+confBiasUpdate(b3_10,i1_10)
+confBiasUpdate(b3_10,i2_10)
