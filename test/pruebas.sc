@@ -66,3 +66,6 @@ rho ( d2 , b3_10 ) //No coincide con el del pdf
 
 rhoER((Vector(0.1, 0.2, 0.2, 0.2, 0.3), Vector(0.1, 0.3, 0.5, 0.7, 0.9)))
 */
+
+showWeightGraph(i1_10)
+showWeightGraph(i2_10)
