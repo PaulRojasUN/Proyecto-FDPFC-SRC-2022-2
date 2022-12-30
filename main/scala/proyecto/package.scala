@@ -13,9 +13,9 @@ package object proyecto {
   //Toma valores entre 0 y 1.
   type Frequency = Vector[Double]
 
-  type Distribucion = (Frequency,DistributionValues)
+  type Distribution = (Frequency,DistributionValues)
 
-  def rhoER(d: Distribucion): Double = {
+  def rhoER(d: Distribution): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
