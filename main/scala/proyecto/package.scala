@@ -13,7 +13,9 @@ package object proyecto {
   //Toma valores entre 0 y 1.
   type Frequency = Vector[Double]
 
-  def rhoER(d: (Frequency, DistributionValues)): Double = {
+  type Distribucion = (Frequency,DistributionValues)
+
+  def rhoER(d: Distribucion): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
@@ -87,10 +89,10 @@ package object proyecto {
   def showWeightGraph(swg : SpecificWeightedGraph):IndexedSeq[IndexedSeq[Double]]=  {
     val (a, b) = swg
     for {
-    i <- (1 to b)
-  } yield (for {
-    j <- (1 to b)
-  } yield a(i, j) )
+      i <- (1 to b)
+    } yield (for {
+      j <- (1 to b)
+    } yield a(i, j) )
 
   }
 
