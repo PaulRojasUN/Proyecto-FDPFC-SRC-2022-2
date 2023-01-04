@@ -100,7 +100,10 @@ package object proyecto {
   def confBiasUpdate(b:SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf ={
     val CB = for(i <- 0 to b.length-1) yield {
       val A_i = for(j <- 0 to b.length-1 if swg._1(j,i) > 0) yield j
-      val nb = for(j <- 0 to A_i.length - 1) yield (1 - (b(j)-b(i)).abs) * swg._1(j,i) * (b(j) - b(i))
+      val nb = for(j <- 0 to A_i.length - 1) yield{
+        val beta_ij = 1 - (b(j)-b(i)).abs
+        beta_ij * swg._1(j,i) * (b(j) - b(i))
+      }
       b(i) + nb.sum/A_i.length
     }
     CB.toVector
