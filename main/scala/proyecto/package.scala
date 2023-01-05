@@ -1,7 +1,15 @@
+import org.apache.commons.math3.stat.Frequency
+
 package object proyecto {
 
+  import scala.collection.parallel.immutable.ParVector
+  import scala.collection.parallel.CollectionConverters._
+  import common._
   import math.pow
   import math.abs
+
+
+
 
   //---------------------------------- Ejercicio 2.1 Medida de Esteban & Ray ------------------------------------//
 
@@ -13,9 +21,7 @@ package object proyecto {
   //Toma valores entre 0 y 1.
   type Frequency = Vector[Double]
 
-  type Distribution = (Frequency,DistributionValues)
-
-  def rhoER(d: Distribution): Double = {
+  def rhoER(d: (Frequency, DistributionValues)): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
@@ -89,24 +95,21 @@ package object proyecto {
   def showWeightGraph(swg : SpecificWeightedGraph):IndexedSeq[IndexedSeq[Double]]=  {
     val (a, b) = swg
     for {
-      i <- (1 to b)
-    } yield (for {
-      j <- (1 to b)
-    } yield a(i, j) )
+    i <- (1 to b)
+  } yield (for {
+    j <- (1 to b)
+  } yield a(i, j) )
 
   }
 
   //Ejercicio 2.3.2
   def confBiasUpdate(b:SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf ={
-    val nb = for(i <- 0 to b.length-1) yield {
+    val CB = for(i <- 0 to b.length-1) yield {
       val A_i = for(j <- 0 to b.length-1 if swg._1(j,i) > 0) yield j
-      val nbSum = for(j <- 0 to A_i.length - 1) yield{
-        val beta_ij = 1 - (b(j)-b(i)).abs
-        beta_ij * swg._1(j,i) * (b(j) - b(i))
-      }
-      b(i) + nbSum.sum/A_i.length
+      val nb = for(j <- 0 to A_i.length - 1) yield (1 - (b(j)-b(i)).abs) * swg._1(j,i) * (b(j) - b(i))
+      b(i) + nb.sum/A_i.length
     }
-    nb.toVector
+    CB.toVector
   }
 
   //Ejercicio 2.3.3
@@ -120,6 +123,52 @@ package object proyecto {
   }
 
   //------------------------ Ejercicio 2.4 Acelerando la simulacion con Paralelizacion -----------------------------//
+
+  type DistributionValuesPar = ParVector[Double]
+  type FrequencyPar = ParVector[Double]
+  type DistributionPar = (FrequencyPar,DistributionValuesPar)
+
+  def rhoERPar(d: (FrequencyPar,DistributionValuesPar) ): Double = {
+    val K = 10
+    val alpha = 1.6
+    val a = {
+      for {
+        i <- 0 to d._1.length - 1
+        j <- 0 to d._1.length - 1
+      } yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+    }
+    a.sum * K
+  }
+
+
+  def rhoPar(d_k: Discretization, sb: SpecificBeliefConf): Double = {
+
+    val intervals = createIntervals(0.0 +: d_k :+ 1.0) // [0,a), [a, b),..., [y,z),[z,1]
+
+    val counter = task(counterIntervals(sb, intervals, for (a <- Vector.tabulate(intervals.length)(x => x)) yield 0))
+
+    val cantB = sb.length
+
+    val y = task(for (a <- Vector.tabulate(counter.join().length)(x => x) if counter.join()(a) != 0) yield ((intervals(a)._2 - intervals(a)._1) / 2) + intervals(a)._1)
+
+    val pi = for (a <- Vector.tabulate(counter.join().length)(x => x) if counter.join()(a) != 0) yield (counter.join()(a).toDouble / cantB)
+
+    rhoERPar((pi.par, y.join().par))
+
+  }
+
+
+  def confBiasUpdatePar(b: SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf = {
+    val CB = for (i <- 0 to b.length - 1) yield {
+      val A_i = for (j <- 0 to b.length - 1 if swg._1(j, i) > 0) yield j
+      val nb = for (j <- 0 to A_i.length - 1) yield (1 - (b(j) - b(i)).abs) * swg._1(j, i) * (b(j) - b(i))
+      val numerador = task(b(i) + nb.sum)
+      val denominador = A_i.length
+      numerador.join()/denominador
+    }
+    CB.toVector
+  }
+
 
 
 }
