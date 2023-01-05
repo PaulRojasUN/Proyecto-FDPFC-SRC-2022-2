@@ -123,3 +123,37 @@ for {
 } yield (b,rho (d2,b))
 
 //------------------------ Ejercicio 2.4 Acelerando la simulacion con Paralelizacion -----------------------------//
+
+import org.scalameter._
+import scala.collection.parallel.CollectionConverters._
+import scala.collection.parallel.immutable.ParVector
+
+val standardConfig = config(
+  Key.exec.minWarmupRuns := 20,
+  Key.exec.maxWarmupRuns := 40,
+  Key.exec.benchRuns := 25,
+  Key.verbose := false
+)withWarmer(Warmer.Default())
+
+// función que genera una distribución con frecuencias aleatorias (entre 0 y 1) y decisiones representadas (0,...,n-1)
+def distribucion (n:Int):(Vector[Double],Vector[Double]) =
+{
+val frecuencias = for(i<- 0 until n) yield Math.random()
+val desiciones = for(i<- 0 until n) yield i.toDouble
+  (frecuencias.toVector,desiciones.toVector)
+}
+//función que genera una distribución con frecuencias aleatorias (entre 0 y 1) y decisiones representadas (0,...,n-1) en versión paralela
+def distribucionPar (n:Int):(ParVector[Double],ParVector[Double]) =
+{
+  val frecuencias = for(i<- 0 until n) yield Math.random()
+  val desiciones = for(i<- 0 until n) yield i.toDouble
+  (frecuencias.toVector.par,desiciones.toVector.par)
+}
+//se prueban las funciones rhoER y rhoERPar con las distribuciones de diferentes tamaños. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
+val tiemposRhoER = for (i<- 1 to 15) yield (standardConfig measure{rhoER(distribucion(i))}, standardConfig measure{rhoERPar(distribucionPar(i))})
+
+//se prueban las funciones rho y rhoPar con diferente número de agentes. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
+val tiemposRho = for (i<- 300000 to 301000 if i%100==0) yield(standardConfig measure{rho(d1,b1(i))},standardConfig measure{rhoPar(d1,b1(i))})
+
+//se prueban las funciones confBiasUpdate y confBiasUpdatePar con diferente número de agentes. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
+val tiemposCofUpdate = for(i <- 1 to 10)yield (standardConfig measure{confBiasUpdate(b1(i),i1(i))},standardConfig measure{confBiasUpdatePar(b1(i),i1(i))})
