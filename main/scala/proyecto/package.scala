@@ -62,11 +62,14 @@ package object proyecto {
 
   //Función que construye un vector de enteros, el cual representa las apariciones de los valores de sb en los intervalos de inter.
   def counterIntervals(sb: SpecificBeliefConf, inter: Vector[(Double, Double)], counts: Vector[Int]): Vector[Int] = {
-    val indexToUpdate = indexInterval(sb.head, inter, 0)
-    if (sb.tail != Vector())
-      counterIntervals(sb.tail, inter, counts updated(indexToUpdate, counts(indexToUpdate) + 1))
-    else
-      counts updated(indexToUpdate, counts(indexToUpdate) + 1)
+    if (sb.isEmpty == true) counts
+    else {
+      val indexToUpdate = indexInterval(sb.head, inter, 0)
+      if (sb.tail != Vector())
+        counterIntervals(sb.tail, inter, counts updated(indexToUpdate, counts(indexToUpdate) + 1))
+      else
+        counts updated(indexToUpdate, counts(indexToUpdate) + 1)
+    }
   }
 
   def rho(d_k: Discretization, sb: SpecificBeliefConf): Double = {
@@ -145,15 +148,17 @@ package object proyecto {
 
     val intervals = createIntervals(0.0 +: d_k :+ 1.0) // [0,a), [a, b),..., [y,z),[z,1]
 
-    val counter = task(counterIntervals(sb, intervals, for (a <- Vector.tabulate(intervals.length)(x => x)) yield 0))
+    val result1 = parallel(
+      counterIntervals(sb take (sb.length.toFloat / 2).ceil.toInt, intervals, for (a <- Vector.tabulate(intervals.length)(x => x)) yield 0),
+      counterIntervals(sb drop (sb.length.toFloat / 2).ceil.toInt, intervals, for (a <- Vector.tabulate(intervals.length)(x => x)) yield 0))
+
+    val counter = (for (i <- Vector.tabulate(result1._2.length)(x => x)) yield result1._1(i) + result1._2(i)) ++ (if (result1._1.length != result1._2.length) Vector(result1._1.last) else Vector())
 
     val cantB = sb.length
 
-    val y = task(for (a <- Vector.tabulate(counter.join().length)(x => x) if counter.join()(a) != 0) yield ((intervals(a)._2 - intervals(a)._1) / 2) + intervals(a)._1)
+    val result2 = parallel(for (a <- Vector.tabulate(counter.length)(x => x) if counter(a) != 0) yield ((intervals(a)._2 - intervals(a)._1) / 2) + intervals(a)._1, for (a <- Vector.tabulate(counter.length)(x => x) if counter(a) != 0) yield (counter(a).toDouble / cantB))
 
-    val pi = for (a <- Vector.tabulate(counter.join().length)(x => x) if counter.join()(a) != 0) yield (counter.join()(a).toDouble / cantB)
-
-    rhoERPar((pi.par, y.join().par))
+    rhoERPar((result2._2.par, result2._1.par))
 
   }
 
