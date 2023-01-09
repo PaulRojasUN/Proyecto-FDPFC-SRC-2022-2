@@ -150,10 +150,16 @@ def distribucionPar (n:Int):(ParVector[Double],ParVector[Double]) =
   (frecuencias.toVector.par,desiciones.toVector.par)
 }
 //se prueban las funciones rhoER y rhoERPar con las distribuciones de diferentes tamaños. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
-val tiemposRhoER = for (i<- 1 to 15) yield (standardConfig measure{rhoER(distribucion(i))}, standardConfig measure{rhoERPar(distribucionPar(i))})
+val tiemposRhoER = for (i<- 90 to 250 if i%10 == 0) yield (standardConfig measure{rhoER(distribucion(i))}, standardConfig measure{rhoERPar(distribucionPar(i))})
 
 //se prueban las funciones rho y rhoPar con diferente número de agentes. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
 val tiemposRho = for (i<- 300000 to 301000 if i%100==0) yield(standardConfig measure{rho(d1,b1(i))},standardConfig measure{rhoPar(d1,b1(i))})
 
 //se prueban las funciones confBiasUpdate y confBiasUpdatePar con diferente número de agentes. Devuleve un vector de tuplas tal que:( desempeño secuencial, desempeño paralelo)
-val tiemposCofUpdate = for(i <- 1 to 10)yield (standardConfig measure{confBiasUpdate(b1(i),i1(i))},standardConfig measure{confBiasUpdatePar(b1(i),i1(i))})
+val tiemposCofUpdate = for(i <- 500 to 1500 if i%100==0)yield (standardConfig measure{confBiasUpdate(b1(i),i1(i))},standardConfig measure{confBiasUpdatePar(b1(i),i1(i))})
+
+//se prueban las simulaciones completas variando únicamente el número de agentes de la red
+val simuAgentes = for(i <- 700 to 1200 if i%100==0)yield (standardConfig measure{for {b <- simulate(confBiasUpdate, i2(i), b2(i), 10)} yield (b,rho (d2,b))},standardConfig measure{for {b <- simulate(confBiasUpdatePar, i2(i), b2(i), 10)} yield (b,rhoPar(d2,b))})
+
+//se prueban las simulaciones completas variando únicamente las unidades de tiempo para la simulación
+for(i <- 10 to 20 )yield (standardConfig measure{for {b <- simulate(confBiasUpdate, i2(700), b2(700), i)} yield (b,rho (d2,b))},standardConfig measure{for {b <- simulate(confBiasUpdatePar, i2(700), b2(700), i)} yield (b,rhoPar(d2,b))})
