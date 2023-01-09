@@ -106,11 +106,11 @@ package object proyecto {
   }
 
   //Ejercicio 2.3.2
-  def confBiasUpdate(b:SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf ={
+  def confBiasUpdate(b:SpecificBeliefConf, swg: SpecificWeightedGraph):SpecificBeliefConf ={
     val CB = for(i <- 0 to b.length-1) yield {
       val A_i = for(j <- 0 to b.length-1 if swg._1(j,i) > 0) yield j
       val nb = for(j <- 0 to A_i.length - 1) yield (1 - (b(j)-b(i)).abs) * swg._1(j,i) * (b(j) - b(i))
-      b(i) + nb.sum/A_i.length
+      b(i) + nb.sum / A_i.length
     }
     CB.toVector
   }
@@ -131,7 +131,8 @@ package object proyecto {
   type FrequencyPar = ParVector[Double]
   type DistributionPar = (FrequencyPar,DistributionValuesPar)
 
-  def rhoERPar(d: (FrequencyPar,DistributionValuesPar) ): Double = {
+  //Ejercicio 3.4.1
+  def rhoERPar(d: (FrequencyPar, DistributionValuesPar)): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
@@ -143,7 +144,7 @@ package object proyecto {
     a.sum * K
   }
 
-
+  //Ejercicio 2.4.2
   def rhoPar(d_k: Discretization, sb: SpecificBeliefConf): Double = {
 
     val intervals = createIntervals(0.0 +: d_k :+ 1.0) // [0,a), [a, b),..., [y,z),[z,1]
@@ -162,18 +163,33 @@ package object proyecto {
 
   }
 
-
+  //Ejercicioo 2.4.3
   def confBiasUpdatePar(b: SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf = {
     val CB = for (i <- 0 to b.length - 1) yield {
-      val A_i = for (j <- 0 to b.length - 1 if swg._1(j, i) > 0) yield j
+      val A_i = {
+        if(i<20)
+        {
+          for (j <- 0 to b.length - 1 if swg._1(j, i) > 0) yield j
+        }
+        else
+        {
+          val b1 = b take (b.length/2)
+          val b2 = b drop (b.length/2)
+
+          lazy val primerA_i= for (j <- 0 to b1.length - 1 if swg._1(j, i) > 0) yield j
+          lazy val segundoA_i = for (j <- b1.length to b2.length + b1.length - 1 if swg._1(j, i) > 0) yield j
+
+          val parA_i = parallel(primerA_i,segundoA_i)
+
+          parA_i._1++parA_i._2
+        }
+
+      }
       val nb = for (j <- 0 to A_i.length - 1) yield (1 - (b(j) - b(i)).abs) * swg._1(j, i) * (b(j) - b(i))
-      val numerador = task(b(i) + nb.sum)
-      val denominador = A_i.length
-      numerador.join()/denominador
+      b(i) + nb.sum / A_i.length
     }
     CB.toVector
   }
-
 
 
 }
