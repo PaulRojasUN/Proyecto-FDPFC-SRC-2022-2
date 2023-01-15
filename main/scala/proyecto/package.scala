@@ -1,5 +1,3 @@
-import org.apache.commons.math3.stat.Frequency
-
 package object proyecto {
 
   import scala.collection.parallel.immutable.ParVector
@@ -7,9 +5,6 @@ package object proyecto {
   import common._
   import math.pow
   import math.abs
-
-
-
 
   //---------------------------------- Ejercicio 2.1 Medida de Esteban & Ray ------------------------------------//
 
@@ -25,10 +20,10 @@ package object proyecto {
     val K = 10
     val alpha = 1.6
     val a = {
-      for {
-        i <- 0 to d._1.length - 1
-        j <- 0 to d._1.length - 1
-      } yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+      for (i <- 0 to d._1.length - 1) yield {
+        val sumI = for (j <- 0 to d._1.length - 1) yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+        sumI.sum
+      }
     }
     a.sum * K
   }
@@ -98,10 +93,10 @@ package object proyecto {
   def showWeightGraph(swg : SpecificWeightedGraph):IndexedSeq[IndexedSeq[Double]]=  {
     val (a, b) = swg
     for {
-    i <- (1 to b)
-  } yield (for {
-    j <- (1 to b)
-  } yield a(i, j) )
+      i <- (1 to b)
+    } yield (for {
+      j <- (1 to b)
+    } yield a(i, j) )
 
   }
 
@@ -136,10 +131,10 @@ package object proyecto {
     val K = 10
     val alpha = 1.6
     val a = {
-      for {
-        i <- 0 to d._1.length - 1
-        j <- 0 to d._1.length - 1
-      } yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+      for(i <- (0 to d._1.length - 1).par) yield {
+        val sumI = for(j <- (0 to d._1.length - 1).par) yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+        sumI.sum
+      }
     }
     a.sum * K
   }
@@ -157,7 +152,9 @@ package object proyecto {
 
     val cantB = sb.length
 
-    val result2 = parallel(for (a <- Vector.tabulate(counter.length)(x => x) if counter(a) != 0) yield ((intervals(a)._2 - intervals(a)._1) / 2) + intervals(a)._1, for (a <- Vector.tabulate(counter.length)(x => x) if counter(a) != 0) yield (counter(a).toDouble / cantB))
+    val result2 = parallel(
+      for (a <- (Vector.tabulate(counter.length)(x => x)).par if counter(a) != 0) yield ((intervals(a)._2 - intervals(a)._1) / 2) + intervals(a)._1,
+      for (a <- (Vector.tabulate(counter.length)(x => x)).par if counter(a) != 0) yield (counter(a).toDouble / cantB))
 
     rhoERPar((result2._2.par, result2._1.par))
 
@@ -165,31 +162,17 @@ package object proyecto {
 
   //Ejercicioo 2.4.3
   def confBiasUpdatePar(b: SpecificBeliefConf, swg: SpecificWeightedGraph): SpecificBeliefConf = {
-    val CB = for (i <- 0 to b.length - 1) yield {
-      val A_i = {
-        if(i<20)
-        {
-          for (j <- 0 to b.length - 1 if swg._1(j, i) > 0) yield j
-        }
-        else
-        {
-          val b1 = b take (b.length/2)
-          val b2 = b drop (b.length/2)
-
-          lazy val primerA_i= for (j <- 0 to b1.length - 1 if swg._1(j, i) > 0) yield j
-          lazy val segundoA_i = for (j <- b1.length to b2.length + b1.length - 1 if swg._1(j, i) > 0) yield j
-
-          val parA_i = parallel(primerA_i,segundoA_i)
-
-          parA_i._1++parA_i._2
-        }
-
-      }
+    val CB = for (i <- (0 to b.length - 1).par) yield {
+      val A_iPar = parallel(
+        for(j <- 0 until (b.length - 1)/2 if swg._1(j, i) > 0) yield j,
+        for(j <- (b.length - 1)/2 to (b.length - 1) if swg._1(j, i) > 0) yield j
+      )
+      val A_i = A_iPar._1 ++ A_iPar._2
       val nb = for (j <- 0 to A_i.length - 1) yield (1 - (b(j) - b(i)).abs) * swg._1(j, i) * (b(j) - b(i))
       b(i) + nb.sum / A_i.length
     }
     CB.toVector
   }
-
-
 }
+
+
