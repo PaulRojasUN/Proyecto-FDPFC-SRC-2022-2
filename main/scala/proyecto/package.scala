@@ -44,21 +44,20 @@ package object proyecto {
     }
   }
 
-  //Función que determina en que indice de la lista de intervalos inter, se encuentra el valor doble v.
-  def indexInterval(v: Double, inter: Vector[(Double, Double)], i: Int): Int = {
-    if (inter.tail == Vector()) i //Si es el último intervalo, la única posibilidad es que esté ahí.
-    else {
-      if (v >= inter.head._1 && v < inter.head._2) i
-      else indexInterval(v, inter.tail, i + 1)
-    }
-
-  }
-
 
   //Función que construye un vector de enteros, el cual representa las apariciones de los valores de sb en los intervalos de inter.
   def counterIntervals(sb: SpecificBeliefConf, inter: Vector[(Double, Double)], counts: Vector[Int]): Vector[Int] = {
     if (sb.isEmpty == true) counts
     else {
+      //Función que determina en que indice de la lista de intervalos inter, se encuentra el valor doble v.
+      def indexInterval(v: Double, inter: Vector[(Double, Double)], i: Int): Int = {
+        if (inter.tail == Vector()) i //Si es el último intervalo, la única posibilidad es que esté ahí.
+        else {
+          if (v >= inter.head._1 && v < inter.head._2) i
+          else indexInterval(v, inter.tail, i + 1)
+        }
+
+      }
       val indexToUpdate = indexInterval(sb.head, inter, 0)
       if (sb.tail != Vector())
         counterIntervals(sb.tail, inter, counts updated(indexToUpdate, counts(indexToUpdate) + 1))
