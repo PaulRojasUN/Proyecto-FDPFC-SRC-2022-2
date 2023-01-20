@@ -9,10 +9,10 @@
 
 En este repositorio encontrará:
 	
-  En la carpeta Main.  
+  En la carpeta src/main.  
 	  - Un paquete llamado Proyecto con las implementaciones de las funciones.  
 	
-  En la carpeta test.  
+  En la carpeta src/test.  
 	  - Un worksheet llamado "pruebas.sc" con los casos de prueba ejemplo del documento del proyecto.  
 	  - Un worksheet llamado "casosPrueba.sc" con los casos de prueba diseñados para probar las funciones.  
 	  - Un worksheet llamado "pruebasParalelizacion.sc" con las pruebas para la evaluacion de desempeño.  
