@@ -16,12 +16,15 @@ package object proyecto {
   //Toma valores entre 0 y 1.
   type Frequency = Vector[Double]
 
-  def rhoER(d: (Frequency, DistributionValues)): Double = {
+  type Distribution = (Frequency, DistributionValues)
+
+  def rhoER(d: Distribution): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
       for (i <- 0 to d._1.length - 1) yield {
-        val sumI = for (j <- 0 to d._1.length - 1) yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
+        val sumI = for (j <- 0 to d._1.length - 1)
+          yield pow(d._1(i), 1 + alpha) * d._1(j) * abs(d._2(i) - d._2(j))
         sumI.sum
       }
     }
@@ -126,7 +129,7 @@ package object proyecto {
   type DistributionPar = (FrequencyPar,DistributionValuesPar)
 
   //Ejercicio 3.4.1
-  def rhoERPar(d: (FrequencyPar, DistributionValuesPar)): Double = {
+  def rhoERPar(d: DistributionPar): Double = {
     val K = 10
     val alpha = 1.6
     val a = {
